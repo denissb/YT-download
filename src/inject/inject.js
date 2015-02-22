@@ -5,7 +5,15 @@ var YTDownload = (function() {
         domId = 'ytdownload-section';
 
     function getVideoLinks(callback) {
-        vid = getUrlParam('v');
+        var _vid = getUrlParam('v');
+        
+        // Preventing double ajax requests
+        if (_vid === vid) {
+            return;
+        } else {
+            vid = _vid;
+        }
+        
         getVideoInfo(vid, function() {
             var videoInfo = decodeInfoMap(this.responseText);
             if (!videoInfo.url_encoded_fmt_stream_map) {
@@ -20,7 +28,7 @@ var YTDownload = (function() {
                 }
             }
             
-            vTitle = videoInfo.title.replace(/\+/g, '_');
+            vTitle = videoInfo.title;
             var qObj = decodeQualityMap(videoInfo.url_encoded_fmt_stream_map);
             callback(qObj);
         });
@@ -81,7 +89,10 @@ var YTDownload = (function() {
                 if (keyVal[0] === 'quality') {
                     q = keyVal[1];
                 } else if (keyVal[0] === 'url') {
-                    result[q || 'default'] = decodeURIComponent(keyVal[1]);
+                    // Preventing key overwrite
+                    if (result[q])
+                        continue;
+                    result[q || 'hd720'] = decodeURIComponent(keyVal[1]);
                 }
             }
         }
@@ -104,7 +115,6 @@ var YTDownload = (function() {
         var container  = document.getElementById('watch8-secondary-actions');
         
         if (!container) {
-            console.log('UI could not be modified');
             return;
         }
         
@@ -114,7 +124,6 @@ var YTDownload = (function() {
             return el;
         }
         
-        // TODO: Cache response until video URL changes
         function populateLinks() {
             getVideoLinks(function (qLinks) {
                 if (qLinks.reason) {
@@ -127,14 +136,11 @@ var YTDownload = (function() {
             
                 list.innerHTML = '';
                 for (var prop in qLinks){
-                    if (prop === 'default') {
-                        continue;
-                    }
                     var listItem = makeDomEl('li', 'yt-ui-menu-item ');
                     var link = makeDomEl('a', 'yt-ui-menu-item-label');
                     link.innerText = prop;
-                    link.href = qLinks[prop];
-                    link.setAttribute('download', vTitle + '_' + prop);
+                    link.href = qLinks[prop] + '&title=' + vTitle;
+                    link.setAttribute('download', '');
                     listItem.appendChild(link);
                     list.appendChild(listItem);
                 }
