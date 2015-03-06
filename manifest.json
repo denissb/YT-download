@@ -2,7 +2,7 @@
   "name": "YT download",
   "version": "0.0.1",
   "manifest_version": 2,
-  "description": "Simple user-script for downloading youtube videos",
+  "description": "Simple user-script based extension for downloading youtube videos",
   "homepage_url": "https://github.com/spawnius/YT-download",
   "icons": {
     "16": "icons/icon16.png",
@@ -18,9 +18,6 @@
     {
       "matches": [
         "https://www.youtube.com/*"
-      ],
-      "css": [
-        "src/inject/inject.css"
       ]
     },
     {
